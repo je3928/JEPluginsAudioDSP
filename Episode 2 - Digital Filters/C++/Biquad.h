@@ -29,7 +29,7 @@ class Biquad
     ~Biquad();  
 
     // Initialise filter with specified parameters, call to change filter type 
-    // Only peaking and shelving filters require gain so set to 0.0f when using those types.
+    // Only peaking and shelving filters require gain so set to 0.0f when NOT using those types.
     void Init(BiquadType filterType, float fc, float fs, float Q, float gain_dB);
 
     // Call to set all parameters without changing filter type 
@@ -39,7 +39,7 @@ class Biquad
     void SetFc(float fc);
 
     // Call to only set gain. Only peaking and shelving filters require gain
-    // so set to 0.0f when using those types.
+    // so set to 0.0f when NOT using those types.
     void SetGain(float gain_dB);
 
     // Reset filter
