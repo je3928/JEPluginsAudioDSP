@@ -99,6 +99,17 @@ private:
             return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
     }
 
+    // Very mild sigmoid function which we can use to apply subtle non-linearity across the system to emulate non-linear elements such as transistors and op-amps.
+    float mildSigmoid(float xn)
+    {
+        const double EULER = 2.71828182845904523536;
+
+        // Scaling constant to map the function to -1 and 1 calculated using desmos
+        float sigmoidScale = 0.462;
+
+        return (((pow(EULER, xn) - 1) * (EULER + 1)) / ((pow(EULER, xn) + 1) * (EULER - 1))) * sigmoidScale;
+    }
+
     // This function will get our parameters from the treestate and store them in the plugins member variables
     void getParameters();
     

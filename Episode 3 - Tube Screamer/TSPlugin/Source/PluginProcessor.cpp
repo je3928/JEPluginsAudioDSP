@@ -151,16 +151,16 @@ bool TSPluginAudioProcessor::isBusesLayoutSupported (const BusesLayout& layouts)
 
 void TSPluginAudioProcessor::getParameters()
 {
-    // Get parameters from treestate and apply to std::atomic<floats> in the case of float parameters and *AudioParameterChoice in the case of the choice parameter.
+    // Get parameters from treestate and apply to *std::atomic<float> variables in the case of float parameters and *AudioParameterChoice in the case of the choice parameter.
     psaturation = treestate.getRawParameterValue("DRIVE");
     ptone = treestate.getRawParameterValue("TONE");
     plevel = treestate.getRawParameterValue("LEVEL");
     pbypass = (static_cast<AudioParameterChoice*>(treestate.getParameter("BYPASS")));
 
     // Map our float parameters to desired bounds, save choice paramter.
-    saturation = map(*psaturation, 0.0f, 1.0f, 10.0f, 1000.0f);
+    saturation = map(*psaturation, 0.0f, 1.0f, 50.0f, 1000.0f);
     tone = map(*ptone, 0.0f, 1.0f, 1000.f, 6000.f);
-    level = map(*plevel, 0.0f, 1.0f, 0.0f, 1.0f);
+    level = map(*plevel, 0.0f, 1.0f, 0.0f, 1.5f);
     bypass = *pbypass;
 
     // Set frequency cutoff of tone filters.
@@ -206,14 +206,14 @@ void TSPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juc
 
             float dry = xn;
             
-            // Process input with initial HPF.
-            xn = InputStageHPF_L.ProcessSample(xn);
+            // Process input with initial HPF. We also apply a mild sigmoid here to emulate the transistor non-linearity in the buffer.
+            xn = mildSigmoid(InputStageHPF_L.ProcessSample(xn));
             
             // Saturate filtered signal with our tanh soft clipper.
             float xn_saturated = tanh(xn * saturation) / tanh(saturation);
             
-            // Calculate output sample by applying the tone filter. Gain compensation is also applied due to additional gain applied by the soft clipper.
-            float yn = ToneFilter_L.ProcessSample(xn_saturated) * gainCompensation;
+            // Calculate output sample by applying the tone filter. Gain compensation is also applied due to additional gain applied by the soft clipper. Again apply additional non-linearity after filtering for transistor emulation. 
+            float yn = mildSigmoid(ToneFilter_L.ProcessSample(xn_saturated) * gainCompensation);
 
             // This will check if bypass is activated, if bypass is activated then yn will become the dry input.
             yn = bypass ? dry : (yn * level);
@@ -233,17 +233,17 @@ void TSPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juc
             float dry_L = xn_L;
             float dry_R = xn_R;
             
-            // Process inputs with initial HPFs
-            xn_L = InputStageHPF_L.ProcessSample(xn_L);
-            xn_R = InputStageHPF_R.ProcessSample(xn_R);
+            // Process inputs with initial HPFs. We also apply a mild sigmoid here to emulate the transistor non-linearity in the buffer.
+            xn_L = mildSigmoid(InputStageHPF_L.ProcessSample(xn_L));
+            xn_R = mildSigmoid(InputStageHPF_R.ProcessSample(xn_R));
             
             // Saturate filtered signals with our tanh soft clipper.
             float xn_saturated_L = tanh(xn_L * saturation) / tanh(saturation);
             float xn_saturated_R = tanh(xn_R * saturation) / tanh(saturation);
             
-            // Calculate output samples by applying the tone filters. Gain compensation is also applied due to additional gain applied by the soft clipper.
-            float yn_L = ToneFilter_L.ProcessSample(xn_saturated_L) * gainCompensation;
-            float yn_R = ToneFilter_R.ProcessSample(xn_saturated_R) * gainCompensation;
+            // Calculate output samples by applying the tone filters. Gain compensation is also applied due to additional gain applied by the soft clipper. Again apply additional non-linearity after filtering for transistor emulation. 
+            float yn_L = mildSigmoid(ToneFilter_L.ProcessSample(xn_saturated_L) * gainCompensation);
+            float yn_R = mildSigmoid(ToneFilter_R.ProcessSample(xn_saturated_R) * gainCompensation);
 
             // This will check if bypass is activated, if bypass is activated then yn will become the dry input.
             yn_L = bypass ? dry_L : (yn_L * level);
@@ -264,23 +264,23 @@ void TSPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juc
 
             float dry_L = xn_L;
             float dry_R = xn_R;
-            
-            // Process inputs with initial HPFs
-            xn_L = InputStageHPF_L.ProcessSample(xn_L);
-            xn_R = InputStageHPF_R.ProcessSample(xn_R);
-            
+
+            // Process inputs with initial HPFs.  We also apply a mild sigmoid here to emulate the transistor non-linearity in the buffer.
+            xn_L = mildSigmoid(InputStageHPF_L.ProcessSample(xn_L));
+            xn_R = mildSigmoid(InputStageHPF_R.ProcessSample(xn_R));
+
             // Saturate filtered signals with our tanh soft clipper.
             float xn_saturated_L = tanh(xn_L * saturation) / tanh(saturation);
             float xn_saturated_R = tanh(xn_R * saturation) / tanh(saturation);
-            
-            // Calculate output samples by applying the tone filters. Gain compensation is also applied due to additional gain applied by the soft clipper.
-            float yn_L =  ToneFilter_L.ProcessSample(xn_saturated_L) * gainCompensation;
-            float yn_R = ToneFilter_R.ProcessSample(xn_saturated_R) * gainCompensation;
+
+            // Calculate output samples by applying the tone filters. Gain compensation is also applied due to additional gain applied by the soft clipper. Again apply additional non-linearity after filtering for transistor emulation. 
+            float yn_L = mildSigmoid(ToneFilter_L.ProcessSample(xn_saturated_L) * gainCompensation);
+            float yn_R = mildSigmoid(ToneFilter_R.ProcessSample(xn_saturated_R) * gainCompensation);
 
             // This will check if bypass is activated, if bypass is activated then yn will become the dry input.
             yn_L = bypass ? dry_L : (yn_L * level);
             yn_R = bypass ? dry_R : (yn_R * level);
-            
+
             // Write output samples back to buffers.
             channelData_L[sample] = yn_L;
             channelData_R[sample] = yn_R;
