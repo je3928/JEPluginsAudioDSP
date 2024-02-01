@@ -48,6 +48,10 @@ DelayPluginAudioProcessor::DelayPluginAudioProcessor()
 
     addParameter(PingPongEnabled = new juce::AudioParameterBool("PINGPONGENABLED", "PingPongEnabled", false));
 
+    addParameter(SyncEnabled = new juce::AudioParameterBool("SYNCENABLED", "SyncEnabled", false));
+
+    addParameter(SyncSetting = new juce::AudioParameterChoice("SYNCSETTING", "SyncSetting", StringArray{ "1/1", "1/1D", "1/1T", "1/2", "1/2D", "1/2T", "1/4", "1/4D", "1/4T", "1/8", "1/8D", "1/8T", "1/16", "1/16D", "1/16T", "1/32"}, 0));
+
 }
 
 
@@ -188,6 +192,8 @@ void DelayPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, 
     float* channelData_L = buffer.getWritePointer(0);
     float* channelData_R = buffer.getWritePointer(1);
 
+    FinalDelayTime = *SyncEnabled ? CalcDelayTime(Playhead.bpm, *SyncSetting) : *DelayTimeMs;
+
 
     // As we are manually grabbing the channels we want, and we are not using any more than two at any one time we only need to handle the sample numbers. This loop will iterate through all the samples based on the block size of the buffer.
     for (int sample = 0; sample < buffer.getNumSamples(); sample++)
@@ -201,8 +207,8 @@ void DelayPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, 
             float xn = channelData_L[sample];
 
             float dry = xn;
-
-            float ynminusD = BufferL.BufferRead(*DelayTimeMs, true);
+            
+            float ynminusD = BufferL.BufferRead(FinalDelayTime, false);
 
             float bufferinput = xn + *Feedback * ynminusD;
 
@@ -224,8 +230,8 @@ void DelayPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, 
             float dry_L = xn_L;
             float dry_R = xn_R;
 
-            float ynminusD_L = BufferL.BufferRead(*DelayTimeMs, true);
-            float ynminusD_R = BufferR.BufferRead(*DelayTimeMs, true);
+            float ynminusD_L = BufferL.BufferRead(FinalDelayTime, false);
+            float ynminusD_R = BufferR.BufferRead(FinalDelayTime, false);
 
             float bufferinput_L = xn_L + *Feedback * ynminusD_L;
             float bufferinput_R = xn_R + *Feedback * ynminusD_R;
@@ -264,8 +270,8 @@ void DelayPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, 
             float dry_L = xn_L;
             float dry_R = xn_R;
 
-            float ynminusD_L = BufferL.BufferRead(*DelayTimeMs, true);
-            float ynminusD_R = BufferR.BufferRead(*DelayTimeMs, true);
+            float ynminusD_L = BufferL.BufferRead(FinalDelayTime, false);
+            float ynminusD_R = BufferR.BufferRead(FinalDelayTime, false);
 
             float bufferinput_L = xn_L + *Feedback * ynminusD_L;
             float bufferinput_R = xn_R + *Feedback * ynminusD_R;
