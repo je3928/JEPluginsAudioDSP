@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <JUCERPROJECT id="wc3f8m" name="DelayPlugin" projectType="audioplug" useAppConfig="0"
-              addUsingNamespaceToJuceHeader="0" displaySplashScreen="1" jucerFormatVersion="1">
+              addUsingNamespaceToJuceHeader="0" displaySplashScreen="1" jucerFormatVersion="1"
+              pluginManufacturer="JEPlugins">
   <MAINGROUP id="YtxM59" name="DelayPlugin">
     <GROUP id="{1767ED1F-48F2-C7A4-5226-B025C6C12A15}" name="Source">
       <FILE id="rwfzqw" name="PluginProcessor.cpp" compile="1" resource="0"
