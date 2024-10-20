@@ -199,7 +199,8 @@ void DelayPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, 
     for (int sample = 0; sample < buffer.getNumSamples(); sample++)
     {
 
-        // This will be our DSP if our plugin is mono, it will use one set of our processing objects and the samples for the second (right) channel will be left unused. There are better ways of doing this (dynamic memory allocation) but this is simpler to understand.
+        // This will be our DSP if our plugin is mono, it will use one set of our processing objects and the samples for the second (right) channel will be left unused. 
+        //There are better ways of doing this (dynamic memory allocation) but this is simpler to understand.
         if (totalNumInputChannels == 1 && totalNumOutputChannels == 1)
         {
 

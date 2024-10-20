@@ -81,7 +81,11 @@ private:
         float thirtytwothNoteDelay = quarterNoteDelay / 6.0;
 
 
-        double delayNotes[16] = { fullNoteDelay, fullNoteDotted, fullNoteTriplet, halfNoteDelay, halfNoteDotted, halfNoteTriplet, quarterNoteDelay, quarterNoteDotted, quarterNoteTriplet, eighthNoteDelay, eighthNoteDotted, eighthNoteTripletDelay, sixteenthNoteDelay, sixteenthNoteDotted, sixteenthNoteTripletDelay, thirtytwothNoteDelay };
+        double delayNotes[16] = { fullNoteDelay, fullNoteDotted, fullNoteTriplet,
+            halfNoteDelay, halfNoteDotted, halfNoteTriplet, quarterNoteDelay,
+            quarterNoteDotted, quarterNoteTriplet, eighthNoteDelay, eighthNoteDotted,
+            eighthNoteTripletDelay, sixteenthNoteDelay, sixteenthNoteDotted, sixteenthNoteTripletDelay,
+            thirtytwothNoteDelay };
 
         return (delayNotes[syncSetting] * 1000);
     }
